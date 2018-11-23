@@ -1,16 +1,3 @@
-/*! Rappid v2.4.0 - HTML5 Diagramming Framework - TRIAL VERSION
-
-Copyright (c) 2015 client IO
-
- 2018-11-23 
-
-
-This Source Code Form is subject to the terms of the Rappid Trial License
-, v. 2.0. If a copy of the Rappid License was not distributed with this
-file, You can obtain one at http://jointjs.com/license/rappid_v2.txt
- or from the Rappid archive as was distributed by client IO. See the LICENSE file.*/
-
-
 var SCOPES = 'https://www.googleapis.com/auth/drive';
 // console/project/api&auth/credentials/oAuth/CLIENT_ID
 var CLIENT_ID = 'YOUR_CLIENT_ID';
@@ -18,8 +5,6 @@ var CLIENT_ID = 'YOUR_CLIENT_ID';
 var DEVELOPER_KEY = 'YOUR_DEVELOPER_KEY';
 // received after successfull authorization
 var AUTH_TOKEN;
-
-// requires: google picker api enabled
 
 var gapi = window.gapi;
 var google = window.google;
