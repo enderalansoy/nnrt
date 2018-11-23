@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>NN Release Tool</title>
+        <link rel="stylesheet" type="text/css" href="../build/rappid.min.css" />
+        <link rel="stylesheet" type="text/css" href="./css/bpmn.css" />
+    </head>
+    <body>
+        <div id="paper-container"></div>
+        <div id="toolbar-container">
+          <input id="fileName" type="text" value=""/>
+        </div>
+        <div id="stencil-container"></div>
+        <div id="inspector-container">
+          <div class="about">
+          </div>
+        </div>
+        <div id="statusbar-container">
+          <div class="status"></div>
+        </div>
+
+        <script type="text/javascript" src="./src/gd.js"></script>
+        <script type="text/javascript" src="https://apis.google.com/js/client.js"></script>
+
+        <!-- Dependencies: -->
+        <script src="../node_modules/jquery/dist/jquery.js"></script>
+        <script src="../node_modules/lodash/index.js"></script>
+        <script src="../node_modules/backbone/backbone.js"></script>
+
+        <script src="../build/rappid.min.js"></script>
+
+        <script src="./src/inspector.js"></script>
+        <script src="./src/toolbar.js"></script>
+        <script src="./src/bpmn.js"></script>
+    </body>
+</html>
