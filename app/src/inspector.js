@@ -1,34 +1,5 @@
 window.inputs = {
 
-    'bpmn.Gateway': {
-        icon: {
-            type: 'select',
-            options: [
-                { value: 'none', content: 'default' },
-                { value: 'cross', content: 'exclusive' },
-                { value: 'circle', content: 'inclusive' },
-                { value: 'plus', content: 'parallel' }
-            ],
-            label: 'Type',
-            group: 'general',
-            index: 2
-        },
-        attrs: {
-            '.label/text': {
-                type: 'text',
-                label: 'Name',
-                group: 'general',
-                index: 1
-            },
-            '.body/fill': {
-                type: 'color',
-                label: 'Body Color ',
-                group: 'appearance',
-                index: 1
-            }
-        }
-    },
-
     'bpmn.Activity': {
         content: {
             type: 'textarea',
@@ -62,30 +33,17 @@ window.inputs = {
                 label: 'Body Color',
                 group: 'appearance',
                 index: 1
-            }
+            },
+            '.label/text': {
+                type: 'text',
+                label: 'Weight',
+                group: 'general',
+                index: 2
+            },
         }
     },
 
-    'bpmn.Event': {
-        eventType: {
-            type: 'select',
-            options: ['start','end','intermediate'],
-            group: 'general',
-            label: 'Type',
-            index: 2
-        },
-        icon: {
-            type: 'select',
-            options: [
-                { value: 'none', content: 'none' },
-                { value: 'cross', content: 'cancel' },
-                { value: 'message', content: 'message' },
-                { value: 'plus', content: 'parallel multiple' }
-            ],
-            label: 'Subtype',
-            group: 'general',
-            index: 3
-        },
+    'standard.Goal': {
         attrs: {
             '.label/text': {
                 type: 'text',
@@ -93,23 +51,72 @@ window.inputs = {
                 group: 'general',
                 index: 1
             },
+            '.label/weight': {
+                type: 'text',
+                label: 'Weight',
+                group: 'general',
+                index: 2
+            },
             '.body/fill': {
                 type: 'color',
                 label: 'Body Color',
                 group: 'appearance',
-                index: 1
+                index: 3
             }
         }
+    },
+
+    'bpmn.Event': {
+        attrs: {
+            '.label/text': {
+                type: 'text',
+                label: 'Name',
+                group: 'general',
+                index: 1
+            },
+            '.label/weight': {
+                type: 'text',
+                label: 'Weight',
+                group: 'general',
+                index: 3
+            },
+            '.body/fill': {
+                type: 'color',
+                label: 'Body Color',
+                group: 'appearance',
+                index: 4
+            }
+        },
+        eventType: {
+            type: 'select',
+            options: [
+                { value: 'none', content: 'none' },
+                { value: 'PCC', content: 'PCC' },
+                { value: 'NCC', content: 'NCC' },
+                { value: 'PVC', content: 'PVC' },
+                { value: 'NVC', content: 'NVC' },
+            ],
+            label: 'Relation type',
+            group: 'general',
+            index: 2
+        },
+       
     },
 
 
     'bpmn.Flow': {
         flowType: {
             type: 'select',
-            options: ['default', 'conditional','normal','message','association','conversation'],
+            options: ['default','PCC','NCC','PVC','NVG','EXC'],
             label: 'Type',
             group: 'general',
             index: 1
-        }
+        },
+        '.label/weight': {
+            type: 'text',
+            label: 'Weight',
+            group: 'general',
+            index: 2
+        },
     }
 };

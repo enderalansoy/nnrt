@@ -14,6 +14,8 @@ var commandManager = new joint.dia.CommandManager({ graph: graph });
 
 var keyboard = new joint.ui.Keyboard();
 
+var jsonOfGraph = {};
+
 var paper = new joint.dia.Paper({
     width: 2000,
     height: 2000,
@@ -112,10 +114,87 @@ var stencil = new joint.ui.Stencil({
     }
 });
 
+joint.dia.Element.define('bpmn.Event', {
+    attrs: {
+        body: {
+            rx: 20,
+            ry: 20,
+            refWidth: '40%',
+            refHeight: '40%',
+            strokeWidth: 1,
+            stroke: '#000000',
+            fill: '#FFFFFF'
+        },
+        label: {
+            textVerticalAnchor: 'middle',
+            textAnchor: 'middle',
+            refX: '50%',
+            refY: '50%',
+            fontSize: 14,
+            fill: '#333333'
+        },
+        markup: [{
+            tagName: 'rect',
+            selector: 'body',
+        }, {
+            tagName: 'text',
+            selector: 'label'
+        }]
+    }
+}, {
+    markup: [{
+        tagName: 'rect',
+        selector: 'body',
+    }, {
+        tagName: 'text',
+        selector: 'label'
+    }]
+});
+
+
+joint.dia.Element.define('standard.Goal', {
+    attrs: {
+        body: {
+            rx: 20, // add a corner radius
+            ry: 20,
+            refWidth: '100%',
+            refHeight: '100%',
+            strokeWidth: 1,
+            stroke: '#000000',
+            fill: '#FFFFFF'
+        },
+        label: {
+            textVerticalAnchor: 'middle',
+            textAnchor: 'middle',
+            refX: '50%',
+            refY: '50%',
+            fontSize: 14,
+            fill: '#333333'
+        },
+        markup: [{
+            tagName: 'rect',
+            selector: 'body',
+        }, {
+            tagName: 'text',
+            selector: 'label'
+        }]
+    }
+}, {
+    markup: [{
+        tagName: 'rect',
+        selector: 'body',
+    }, {
+        tagName: 'text',
+        selector: 'label'
+    }]
+});
+
 stencil.render().$el.appendTo('#stencil-container');
 
 stencil.load([
     new joint.shapes.bpmn.Activity,
+    new joint.shapes.bpmn.Event,
+    new joint.shapes.standard.Goal,
 ]);
 
 joint.layout.GridLayout.layout(stencil.getGraph(), {
@@ -205,6 +284,32 @@ function showStatus(message, type) {
     });
 }
 
+function smtize() {
+    let funs = [];
+    let goals = [];
+    let refinements = [];
+    let nodes = [];
+    let i = 1;
+    let j = 1;
+    jsonOfGraph.cells.forEach((cell) => {
+        if (cell.type == 'bpmn.Activity') {
+            funs.push(`G${i}`);
+            goals.push({id: cell.id, name: `G${i}`});
+            i++;
+        } else if (cell.type == 'bpmn.Event') {
+            funs.push(`R${j}`);
+            refinements.push({id: cell.id, name: `R${j}`});
+            j++;
+        } else if (cell.type == 'bpmn.Flow') {
+            nodes.push({id: cell.id, from: cell.source.id, to: cell.target.id});
+        }
+    });
+    funs = funs.sort();
+    console.log(goals);
+    console.log(refinements);
+    console.log(nodes);
+}
+
 /* TOOLBAR */
 
 var toolbar = new joint.ui.Toolbar({
@@ -223,6 +328,11 @@ var toolbarCommands = {
         var jsonWindow = window.open('', windowName, windowFeatures);
 
         jsonWindow.document.write(JSON.stringify(graph.toJSON()));
+
+        jsonOfGraph = graph.toJSON();
+
+        console.log(jsonOfGraph);
+        smtize();
     },
 
     loadGraph: function() {
