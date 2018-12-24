@@ -16,6 +16,8 @@ var keyboard = new joint.ui.Keyboard();
 
 var jsonOfGraph = {};
 
+let smtOutput = '';
+
 var paper = new joint.dia.Paper({
     width: 2000,
     height: 2000,
@@ -284,31 +286,6 @@ function showStatus(message, type) {
     });
 }
 
-function smtize() {
-    let funs = [];
-    let goals = [];
-    let refinements = [];
-    let nodes = [];
-    let i = 1;
-    let j = 1;
-    jsonOfGraph.cells.forEach((cell) => {
-        if (cell.type == 'bpmn.Activity') {
-            funs.push(`G${i}`);
-            goals.push({id: cell.id, name: `G${i}`});
-            i++;
-        } else if (cell.type == 'bpmn.Event') {
-            funs.push(`R${j}`);
-            refinements.push({id: cell.id, name: `R${j}`});
-            j++;
-        } else if (cell.type == 'bpmn.Flow') {
-            nodes.push({id: cell.id, from: cell.source.id, to: cell.target.id});
-        }
-    });
-    funs = funs.sort();
-    console.log(goals);
-    console.log(refinements);
-    console.log(nodes);
-}
 
 /* TOOLBAR */
 
@@ -319,6 +296,107 @@ var toolbar = new joint.ui.Toolbar({
         commandManager: commandManager
     }
 });
+
+
+function smtize() {
+    let funs = [];
+    let goals = [];
+    let targets = [];
+    let sources = [];
+    let refinements = [];
+    let nodes = [];
+    let i = 1;
+    let j = 1;
+    jsonOfGraph.cells.forEach((cell) => {
+        if (cell.type == 'standard.Goal') {
+            funs.push(`G${i}`);
+            goals.push({id: cell.id, name: `G${i}`});
+            i++;
+        } else if (cell.type == 'bpmn.Event') {
+            funs.push(`R${j}`);
+            refinements.push({id: cell.id, name: `R${j}`});
+            j++;
+        } else if (cell.type == 'bpmn.Flow') {
+            goals.forEach((goal) => {
+                if (cell.target.id === goal.id) {
+                    targets.push(cell.target.id);
+                }
+            })
+            refinements.forEach((ref) => {
+                if (cell.source.id === ref.id) {
+                    sources.push(cell.source.id);
+                }
+            })
+            
+            nodes.push({id: cell.id, from: cell.source.id, to: cell.target.id});
+        }
+    });
+    funs = funs.sort();
+    
+    console.log(targets);
+    console.log(sources);
+    console.log(nodes)
+
+    // Declaration of Goal, Assumption and Refinement Propostions
+
+    smtOutput += `;%%%%\n;Declaration of Goal, Assumption and Refinement Propostions\n;%%%%\n`;
+
+    funs.forEach((fun) => {
+        smtOutput += `(declare fun ${fun}) \n`;
+    });
+
+    smtOutput += `\n\n`;
+
+    // Close-world
+
+    smtOutput += `;%%%%\n;Close-world\n;%%%%\n`;
+
+    let closeWorldPairings = [];
+    nodes.forEach((node) => {
+        if (targets.includes(node.to) && sources.includes(node.from)) {
+            let goalName;
+            let refName;
+            goals.forEach((goal) => {
+                if (goal.id === node.to) {
+                    goalName = goal.name;
+                }
+            })
+            refinements.forEach((ref) => {
+                if (ref.id === node.from) {
+                    refName = ref.name;
+                }
+            })
+            closeWorldPairings.push({ goal: goalName, refinement: refName });
+        }
+    });
+
+    console.log({closeWorldPairings});
+
+
+    for (i = 0; i < closeWorldPairings.length; i +=1 ) {
+        if (i > 0) {
+            if (closeWorldPairings[i].goal != closeWorldPairings[i-1].goal) {
+                smtOutput += `)))\n(assert (=> ${closeWorldPairings[i].goal}(or ${closeWorldPairings[i].refinement} `;
+            } else {
+                smtOutput += ` ${closeWorldPairings[i].refinement} `;
+            }
+        } else {
+            smtOutput += `\n(assert (=> ${closeWorldPairings[i].goal}(or ${closeWorldPairings[i].refinement}`;
+        }
+       
+    }
+
+    smtOutput += `)))\n`
+
+    smtOutput += `\n\n`;
+
+    // Refinement-Goal relationships
+    
+    smtOutput += `;%%%%\n;Refinement-Goal relationships\n;%%%%\n`;
+
+    console.log(smtOutput);
+
+}
 
 var toolbarCommands = {
     toJSON: function() {
