@@ -302,6 +302,21 @@ graph.on('add', function(cell, collection, opt) {
 });
 
 graph.on('change', function(eventName, cell) {
+    // Mandatory goal management
+    if (eventName.attributes.type === 'standard.Goal') {
+        if (typeof eventName.changed.attrs != 'undefined') {
+            if (typeof eventName.changed.attrs['.label'] != 'undefined') {
+                if (typeof eventName.changed.attrs['.label'].mandatory != 'undefined' && eventName.changed.attrs['.label'].mandatory != 'no') {
+                    console.log('yo')
+                    let mandatoryColor = 'red';
+                    eventName.attr('body/fill', mandatoryColor);
+                } else {
+                    eventName.attr('body/fill', '#FFFFFF');
+                }
+            }
+        }
+    }
+    // Contribution link management
     if (eventName.attributes.type === 'bpmn.Flow') {
         if (typeof eventName.changed.attrs != 'undefined') {
             if (typeof eventName.changed.attrs['.label'].relation != 'undefined' && eventName.changed.attrs['.label'].relation != 'none') {
@@ -360,6 +375,7 @@ graph.on('change', function(eventName, cell) {
 });
 
 function smtize() {
+
     let funs = [];
     let goals = [];
     let targets = [];
@@ -546,7 +562,36 @@ function smtize() {
 
     smtOutput += `;;%%\r\n;;Optimization:\r\n;;%%\r\n(minimize unsat_requirements)\r\n(minimize sat_tasks)\r\n(check-sat)\r\n(get-model)\r\n(exit)\r\n`;
 
-    console.log(smtOutput);
+    // Well formedness checks happen here
+
+    // Duplicate check
+    if ((new Set(funs)).size !== funs.length) {
+        smtOutput = 'There are duplicate values in the goal model, please rename your Goals or Refinements uniquely and try again';
+        return
+    }
+
+    // Double refinements check
+    for (let i = 0; i < refinements.length; i += 1) {
+        for (let j = i + 1; j < refinements.length; j += 1) {
+            if (refinements[i].from === refinements[j].to && refinements[i].to === refinements[j].from) {
+                smtOutput = 'There are double refinements in the model';
+                return
+            } else if (refinements[i].from === refinements[j].from && refinements[i].to === refinements[j].to) {
+                smtOutput = 'There are double refinements in the model';
+                return
+            }
+        }
+    }
+
+    
+
+
+    // File download is happening here
+    if (document.getElementById('fileName').value === '' || typeof document.getElementById('fileName').value === 'undefined') {
+        download(smtOutput, 'output.smt2', 'text');
+    } else {
+        download(smtOutput, document.getElementById('fileName').value + '.smt2', 'text');
+    }
 
 
 }
@@ -567,13 +612,8 @@ var toolbarCommands = {
         // Main function works here
         smtize();
 
-        // File download is happening here
         jsonWindow.document.write('<pre><code class="javascript"><code class="keyword">' + smtOutput + '</code></pre>');
-        if (document.getElementById('fileName').value === '' || typeof document.getElementById('fileName').value === 'undefined') {
-            download(smtOutput, 'output.smt2', 'text');
-        } else {
-            download(smtOutput, document.getElementById('fileName').value + '.smt2', 'text');
-        }
+
     },
 
     loadGraph: function() {
