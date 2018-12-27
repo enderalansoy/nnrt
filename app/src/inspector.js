@@ -58,30 +58,36 @@ window.inputs = {
                 group: 'general',
                 index: 2
             },
-            '.label/weight': {
-                type: 'text',
-                label: 'Weight',
-                group: 'general',
-                index: 3
-            },
             '.label/mandatory': {
                 type: 'select',
                 label: 'Is Mandatory',
                 options: ['no', 'yes'],
                 group: 'general',
+                index: 3
+            },
+            '.label/theme': {
+                type: 'text',
+                label: 'Theme',
+                group: 'general',
                 index: 4
+            },
+            '.label/weight': {
+                type: 'text',
+                label: 'Weight',
+                group: 'general',
+                index: 5
             },
             '.label/weightType': {
                 type: 'text',
                 label: 'Weight type',
                 group: 'general',
-                index: 5
+                index: 6
             },
             'body/fill': {
                 type: 'color',
                 label: 'Body Color',
                 group: 'appearance',
-                index: 6
+                index: 7
             },
         }
     },

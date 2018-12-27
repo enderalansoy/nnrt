@@ -307,7 +307,6 @@ graph.on('change', function(eventName, cell) {
         if (typeof eventName.changed.attrs != 'undefined') {
             if (typeof eventName.changed.attrs['.label'] != 'undefined') {
                 if (typeof eventName.changed.attrs['.label'].mandatory != 'undefined' && eventName.changed.attrs['.label'].mandatory != 'no') {
-                    console.log('yo')
                     let mandatoryColor = 'red';
                     eventName.attr('body/fill', mandatoryColor);
                 } else {
@@ -388,8 +387,6 @@ function smtize() {
     let j = 1;
     let k = 1;
 
-    console.log(jsonOfGraph)
-
     jsonOfGraph.cells.forEach((cell) => {
         if (cell.type == 'standard.Goal') {
             funs.push(cell.attrs.label.text);
@@ -420,15 +417,10 @@ function smtize() {
                 }
             })
 
-            console.log({contributions});
             nodes.push({id: cell.id, from: cell.source.id, to: cell.target.id});
         }
     });
     funs = funs.sort();
-    
-    console.log(targets);
-    console.log(sources);
-    console.log(nodes)
 
     // SMT output start
 
@@ -502,7 +494,6 @@ function smtize() {
         nodes.forEach((node) => {
             if (ref.id === node.to) {
                 goals.forEach((goal) => {
-                    console.log({name: goal.name, id: goal.id})
                     if (goal.id === node.from) {
                         leftSide += goal.name + ' ';
                     }
@@ -571,21 +562,34 @@ function smtize() {
     }
 
     // Double refinements check
-    for (let i = 0; i < refinements.length; i += 1) {
-        for (let j = i + 1; j < refinements.length; j += 1) {
-            if (refinements[i].from === refinements[j].to && refinements[i].to === refinements[j].from) {
-                smtOutput = 'There are double refinements in the model';
-                return
-            } else if (refinements[i].from === refinements[j].from && refinements[i].to === refinements[j].to) {
-                smtOutput = 'There are double refinements in the model';
-                return
-            }
-        }
-    }
+    // for (let i = 0; i < refinements.length; i += 1) {
+    //     for (let j = i + 1; j < refinements.length; j += 1) {
+    //         if (refinements[i].from === refinements[j].to && refinements[i].to === refinements[j].from) {
+    //             smtOutput = 'There are double refinements in the model';
+    //             return
+    //         } else if (refinements[i].from === refinements[j].from && refinements[i].to === refinements[j].to) {
+    //             smtOutput = 'There are double refinements in the model';
+    //             return
+    //         }
+    //     }
+    // }
+
+    // Leaf goal check
+    // let leafGoals = goals;
+    // goals.forEach((goal) => {
+    //     refinements.forEach((ref) => {
+    //         nodes.forEach((node) => {
+    //             if (node.id === ref.id) {
+    //                 console.log(node)
+    //                 if (node.to === goal.id) {
+    //                     console.log(goal.name);
+    //                 }
+    //             }
+    //         })
+    //     })
+    // })
 
     
-
-
     // File download is happening here
     if (document.getElementById('fileName').value === '' || typeof document.getElementById('fileName').value === 'undefined') {
         download(smtOutput, 'output.smt2', 'text');
