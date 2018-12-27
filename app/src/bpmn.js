@@ -574,7 +574,7 @@ function smtize() {
     //     }
     // }
 
-    // Leaf goal check
+    // //Leaf goal check
     // let leafGoals = goals;
     // goals.forEach((goal) => {
     //     refinements.forEach((ref) => {
@@ -593,6 +593,15 @@ function smtize() {
     // File download is happening here
     if (document.getElementById('fileName').value === '' || typeof document.getElementById('fileName').value === 'undefined') {
         download(smtOutput, 'output.smt2', 'text');
+        axios.get('http://localhost:3000/', {
+            hey: smtOutput,
+          })
+          .then(function (response) {
+            console.log(response);
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
     } else {
         download(smtOutput, document.getElementById('fileName').value + '.smt2', 'text');
     }
