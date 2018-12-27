@@ -33,7 +33,7 @@ window.toolbarConfig = {
             name: 'tojson',
             attrs: {
                 button: {
-                    'data-tooltip': 'Open As JSON'
+                    'data-tooltip': 'Generate .smt2'
                 }
             }
         },

@@ -240,9 +240,9 @@ body {
 .joint-stencil.joint-theme-bpmn .elements .joint-type-bpmn-pool .body {
     pointer-events: visiblePainted;
 }
-.joint-stencil.joint-theme-bpmn .elements text, .stencil-paper-drag .joint-element text {
+/* .joint-stencil.joint-theme-bpmn .elements text, .stencil-paper-drag .joint-element text {
     display: none;
-}
+} */
 
 .fobj div {
     font-size: 14px;
@@ -624,9 +624,9 @@ _:-moz-tree-row(hover), .joint-inspector.joint-theme-bpmn input[type=text] {
 
 /* ABOUT */
 
-#inspector-container > div:nth-child(2) {
+/* #inspector-container > div:nth-child(2) {
     display: none;
-}
+} */
 
 .about {
     text-align: center;

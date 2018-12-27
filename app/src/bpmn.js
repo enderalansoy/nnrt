@@ -124,16 +124,16 @@ joint.dia.Element.define('bpmn.Event', {
             refWidth: '40%',
             refHeight: '40%',
             strokeWidth: 1,
-            stroke: '#000000',
-            fill: '#FFFFFF'
+            stroke: '#333333',
+            fill: '#000000', 
         },
         label: {
             textVerticalAnchor: 'middle',
             textAnchor: 'middle',
-            refX: '50%',
-            refY: '50%',
+            refX: '21%',
+            refY: '21%',
             fontSize: 14,
-            fill: '#333333'
+            fill: '#FFFFFF'
         },
         markup: [{
             tagName: 'rect',
@@ -153,15 +153,14 @@ joint.dia.Element.define('bpmn.Event', {
     }]
 });
 
-
 joint.dia.Element.define('standard.Goal', {
     attrs: {
         body: {
-            rx: 20, // add a corner radius
+            rx: 20,
             ry: 20,
             refWidth: '100%',
-            refHeight: '100%',
-            strokeWidth: 1,
+            refHeight: '80%',
+            strokeWidth: 2,
             stroke: '#000000',
             fill: '#FFFFFF'
         },
@@ -169,17 +168,10 @@ joint.dia.Element.define('standard.Goal', {
             textVerticalAnchor: 'middle',
             textAnchor: 'middle',
             refX: '50%',
-            refY: '50%',
+            refY: '40%',
             fontSize: 14,
             fill: '#333333'
         },
-        markup: [{
-            tagName: 'rect',
-            selector: 'body',
-        }, {
-            tagName: 'text',
-            selector: 'label'
-        }]
     }
 }, {
     markup: [{
@@ -194,9 +186,8 @@ joint.dia.Element.define('standard.Goal', {
 stencil.render().$el.appendTo('#stencil-container');
 
 stencil.load([
-    new joint.shapes.bpmn.Activity,
-    new joint.shapes.bpmn.Event,
     new joint.shapes.standard.Goal,
+    new joint.shapes.bpmn.Event,
 ]);
 
 joint.layout.GridLayout.layout(stencil.getGraph(), {
@@ -221,20 +212,10 @@ stencil.getGraph().get('cells').each(function(cell) {
     });
 });
 
-/* CELL ADDED: after the view of the model was added into the paper */
-graph.on('add', function(cell, collection, opt) {
-
-    if (!opt.stencil) return;
-
-    // open inspector after a new element dropped from stencil
-    var view = paper.findViewByModel(cell);
-    if (view) openTools(view);
-});
 
 /* KEYBOARD */
 
 keyboard.on('delete backspace', function() {
-
     graph.removeCells(selection.collection.toArray());
 });
 
@@ -279,7 +260,6 @@ function openTools(cellView) {
 }
 
 function showStatus(message, type) {
-
     $('.status').removeClass('info error success').addClass(type).html(message);
     $('#statusbar-container').dequeue().addClass('active').delay(3000).queue(function() {
         $(this).removeClass('active');
@@ -297,6 +277,87 @@ var toolbar = new joint.ui.Toolbar({
     }
 });
 
+let stencilGoals = [];
+let stencilRefs = [];
+
+/* CELL ADDED: after the view of the model was added into the paper */
+graph.on('add', function(cell, collection, opt) {
+
+    if (!opt.stencil) return;
+
+    // autonaming is happening here
+
+    if (cell.attributes.type == 'standard.Goal') {
+        stencilGoals.push({id: cell.id, name: `G${stencilGoals.length}`});
+        cell.attr('label/text', `G${stencilGoals.length}`);
+
+    } else if (cell.attributes.type == 'bpmn.Event') {
+        stencilRefs.push({id: cell.id, name: `R${stencilRefs.length}`});
+        cell.attr('label/text', `R${stencilRefs.length}`);
+    }
+    
+    // open inspector after a new element dropped from stencil
+    var view = paper.findViewByModel(cell);
+    if (view) openTools(view);
+});
+
+graph.on('change', function(eventName, cell) {
+    if (eventName.attributes.type === 'bpmn.Flow') {
+        if (typeof eventName.changed.attrs != 'undefined') {
+            if (typeof eventName.changed.attrs['.label'].relation != 'undefined' && eventName.changed.attrs['.label'].relation != 'none') {
+                eventName.set('flowType', 'message')
+                
+                let contributionType = '';
+
+                if (eventName.changed.attrs['.label'].relation === 'PCC') {
+                    contributionType = '+C'
+                } else if (eventName.changed.attrs['.label'].relation === 'PVC') {
+                    contributionType = '+V'
+                } else if (eventName.changed.attrs['.label'].relation === 'NCC') {
+                    contributionType = '-C'
+                } else if (eventName.changed.attrs['.label'].relation === 'NVC') {
+                    contributionType = '-V'
+                }
+
+                eventName.label(0,{
+                    markup: [
+                        {
+                            tagName: 'circle',
+                            selector: 'body'
+                        }, {
+                            tagName: 'text',
+                            selector: 'label'
+                        }
+                    ],
+                    attrs: {
+                        label: {
+                            text: contributionType,
+                            fill: '#000000',
+                            fontSize: 14,
+                            textAnchor: 'middle',
+                            yAlignment: 'middle',
+                            pointerEvents: 'none'
+                        },
+                        body: {
+                            ref: 'label',
+                            fill: '#ffffff',
+                            stroke: '#000000',
+                            strokeWidth: 1,
+                            refR: 1,
+                            refCx: 0,
+                            refCy: 0
+                        },
+                    }
+                }
+              );
+                
+            } else {
+                eventName.set('flowType', 'normal')
+                eventName.removeLabel(0)
+            }
+        }
+    }
+});
 
 function smtize() {
     let funs = [];
@@ -305,16 +366,27 @@ function smtize() {
     let sources = [];
     let refinements = [];
     let nodes = [];
+    let mandatoryGoals = [];
+    let contributions = [];
     let i = 1;
     let j = 1;
+    let k = 1;
+
+    console.log(jsonOfGraph)
+
     jsonOfGraph.cells.forEach((cell) => {
         if (cell.type == 'standard.Goal') {
-            funs.push(`G${i}`);
-            goals.push({id: cell.id, name: `G${i}`});
+            funs.push(cell.attrs.label.text);
+            goals.push({id: cell.id, name: cell.attrs.label.text});
+            if (typeof cell.attrs['.label'] !== 'undefined') {
+                if (cell.attrs['.label'].mandatory === 'yes') {
+                    mandatoryGoals.push(cell.attrs.label.text);
+                }
+            }
             i++;
         } else if (cell.type == 'bpmn.Event') {
-            funs.push(`R${j}`);
-            refinements.push({id: cell.id, name: `R${j}`});
+            funs.push(cell.attrs.label.text);
+            refinements.push({id: cell.id, name: cell.attrs.label.text});
             j++;
         } else if (cell.type == 'bpmn.Flow') {
             goals.forEach((goal) => {
@@ -322,12 +394,17 @@ function smtize() {
                     targets.push(cell.target.id);
                 }
             })
+            if (typeof cell.attrs['.label'] !== 'undefined') {
+                contributions.push({name: `CCR${k}`, relation: cell.attrs['.label'].relation, weight: cell.attrs['.label'].weight, from: cell.source.id, to: cell.target.id})
+                k += 1;
+            }
             refinements.forEach((ref) => {
                 if (cell.source.id === ref.id) {
                     sources.push(cell.source.id);
                 }
             })
-            
+
+            console.log({contributions});
             nodes.push({id: cell.id, from: cell.source.id, to: cell.target.id});
         }
     });
@@ -337,19 +414,27 @@ function smtize() {
     console.log(sources);
     console.log(nodes)
 
+    // SMT output start
+
+    smtOutput += `;; activate model generation\r\n(set-option :produce-models true)\r\n\r\n`
+
     // Declaration of Goal, Assumption and Refinement Propostions
 
-    smtOutput += `;%%%%\n;Declaration of Goal, Assumption and Refinement Propostions\n;%%%%\n`;
+    smtOutput += `;;%%%%\r\n;Declaration of Goal, Assumption and Refinement Propostions\r\n;%%%%\r\n`;
 
     funs.forEach((fun) => {
-        smtOutput += `(declare fun ${fun}) \n`;
+        smtOutput += `(declare-fun ${fun} () Bool) \r\n`;
     });
 
-    smtOutput += `\n\n`;
+    contributions.forEach((c) => {
+        smtOutput += `(declare-fun ${c.name} () Bool) \r\n`;
+    })
+
+    smtOutput += `\r\n\r\n`;
 
     // Close-world
 
-    smtOutput += `;%%%%\n;Close-world\n;%%%%\n`;
+    smtOutput += `;;%%%%\r\n;Close-world\r\n;%%%%\r\n`;
 
     let closeWorldPairings = [];
     nodes.forEach((node) => {
@@ -370,47 +455,125 @@ function smtize() {
         }
     });
 
-    console.log({closeWorldPairings});
-
-
     for (i = 0; i < closeWorldPairings.length; i +=1 ) {
         if (i > 0) {
             if (closeWorldPairings[i].goal != closeWorldPairings[i-1].goal) {
-                smtOutput += `)))\n(assert (=> ${closeWorldPairings[i].goal}(or ${closeWorldPairings[i].refinement} `;
+                smtOutput += `)))\r\n(assert (=> ${closeWorldPairings[i].goal}(or ${closeWorldPairings[i].refinement} `;
             } else {
                 smtOutput += ` ${closeWorldPairings[i].refinement} `;
             }
         } else {
-            smtOutput += `\n(assert (=> ${closeWorldPairings[i].goal}(or ${closeWorldPairings[i].refinement}`;
+            smtOutput += `\r\n(assert (=> ${closeWorldPairings[i].goal}(or ${closeWorldPairings[i].refinement}`;
         }
        
     }
 
-    smtOutput += `)))\n`
+    if (closeWorldPairings.length > 0) {
+        smtOutput += `)))\r\n`
+    }
 
-    smtOutput += `\n\n`;
+    smtOutput += `\r\n\r\n`;
 
     // Refinement-Goal relationships
     
-    smtOutput += `;%%%%\n;Refinement-Goal relationships\n;%%%%\n`;
+    smtOutput += `;;%%%%\r\n;Refinement-Goal relationships\r\n;%%%%\r\n`;
+
+    refGoalRelations = ``;
+
+    refinements.forEach((ref) => {
+        let rightSide = '';
+        let leftSide = '';
+        nodes.forEach((node) => {
+            if (ref.id === node.to) {
+                goals.forEach((goal) => {
+                    console.log({name: goal.name, id: goal.id})
+                    if (goal.id === node.from) {
+                        leftSide += goal.name + ' ';
+                    }
+                });
+            } else if (ref.id === node.from) {
+                goals.forEach((goal) => {
+                    if (goal.id === node.to) {
+                        rightSide += goal.name + ' ';
+                    }
+                });
+            }
+        });
+        refGoalRelations += `(assert (and (= ${ref.name} (and ${leftSide})) (=> ${ref.name} ${rightSide})))\r\n`;
+    });
+
+    smtOutput += refGoalRelations;
+
+    smtOutput += `\r\n\r\n`;
+
+    // Mandatory goals
+
+    smtOutput += `;;%%%%\r\n;Mandatory goals\r\n;%%%%\r\n`;
+
+    mandatoryGoals.forEach((mandaGoal) =>{
+        smtOutput += `(assert ${mandaGoal})\r\n`;
+    });
+
+    smtOutput += `\r\n\r\n`;
+
+    // Contributions
+    
+    smtOutput += `;;%%%%\r\n;Contributions\r\n;%%%%\r\n`;
+
+    contributions.forEach((c) => {
+        goals.forEach((goal) => {
+            if (goal.id === c.from) {
+                c.from = goal.name;
+            }
+            if (goal.id === c.to) {
+                c.to = goal.name;
+            }
+        });
+
+        smtOutput += `(assert (= ${c.name} (and ${c.from} ${c.to})))\r\n`;
+
+        if (c.weight === 'undefined') {
+            c.weight = 1;
+        } 
+        if (typeof c.relation === 'undefined') {
+            c.relation = 'none';
+        }
+
+        smtOutput += '(assert-soft ' + c.name + ' :weight ' + c.weight + ' :id ' + c.relation + ')\r\n';
+    });
+
+    smtOutput += `\r\n\r\n`;
+
+    smtOutput += `;;%%\r\n;;Optimization:\r\n;;%%\r\n(minimize unsat_requirements)\r\n(minimize sat_tasks)\r\n(check-sat)\r\n(get-model)\r\n(exit)\r\n`;
 
     console.log(smtOutput);
+
 
 }
 
 var toolbarCommands = {
     toJSON: function() {
-
+        let nameOfFile = ''
+        smtOutput = ''
         var windowFeatures = 'menubar=no,location=no,resizable=yes,scrollbars=yes,status=no';
         var windowName = _.uniqueId('json_output');
         var jsonWindow = window.open('', windowName, windowFeatures);
 
-        jsonWindow.document.write(JSON.stringify(graph.toJSON()));
+        // Keep this if we ever need to see the json output.
+        //jsonWindow.document.write(JSON.stringify(graph.toJSON()));
 
         jsonOfGraph = graph.toJSON();
 
-        console.log(jsonOfGraph);
+        // Main function works here
         smtize();
+
+        // File download is happening here
+        jsonWindow.document.write('<pre><code class="javascript"><code class="keyword">' + smtOutput + '</code></pre>');
+        if (document.getElementById('fileName').value === '' || typeof document.getElementById('fileName').value === 'undefined') {
+            download(smtOutput, 'output.smt2', 'text');
+        } else {
+            download(smtOutput, document.getElementById('fileName').value + '.smt2', 'text');
+        }
     },
 
     loadGraph: function() {
@@ -470,3 +633,22 @@ toolbar.$('[data-tooltip]').each(function() {
         direction: 'top'
     });
 });
+
+// Function to download data to a file
+function download(data, filename, type) {
+    var file = new Blob([data], {type: type});
+    if (window.navigator.msSaveOrOpenBlob) // IE10+
+        window.navigator.msSaveOrOpenBlob(file, filename);
+    else { // Others
+        var a = document.createElement("a"),
+                url = URL.createObjectURL(file);
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function() {
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);  
+        }, 0); 
+    }
+}
