@@ -22,6 +22,7 @@ let preference = `
 let optimization = `
 ;;%%\r\n;;Optimization:\r\n;;%%\r\n(minimize unsat_requirements)\r\n(minimize sat_tasks)\r\n(check-sat)\r\n(set-model 1)\r\n(get-model)\r\n(exit)\r\n
 `;
+let scheme = ''
 
 
 
@@ -556,6 +557,16 @@ function smtize() {
         smtOutput += '(assert-soft ' + c.name + ' :weight ' + c.weight + ' :id ' + c.relation + ')\r\n';
     });
 
+
+    graph.attributes.cells.models.forEach((model) => {
+        if (typeof model.attributes.attrs['.label'] !== 'undefined') {
+            model.attributes.attrs['.label'].weight.forEach((w) => {
+                console.log(w)
+                smtOutput += '(assert-soft ' + model.attributes.attrs.label.text + ' :weight ' + w.attrs.text.body + ' :id ' + w.attrs.text.title + ')\r\n';
+            })
+        }
+    })
+
     smtOutput += `\r\n\r\n`;
 
     // Preference
@@ -580,6 +591,14 @@ function smtize() {
     tops = [...new Set(tops)];
 
     leafs.forEach((leaf) => {
+        tops.forEach((top) => {
+            if (leaf === top) {
+                leafs = leafs.filter(e => e !== leaf)
+            }
+        })
+    })
+
+    leafs.forEach((leaf) => {
         preference += `(assert-soft (not ${leaf.name} ) :id sat_tasks)\r\n`
     })
     
@@ -589,8 +608,19 @@ function smtize() {
     
     // Optimization scheme
 
-    smtOutput += preference;
-    smtOutput += optimization;
+    optimization = `
+;;%%
+;;Optimization:
+;;%%
+(minimize unsat_requirements)
+(minimize sat_tasks)
+(check-sat)
+(set-model 1)
+(get-model)
+(exit)`
+
+    scheme = preference + optimization;
+    smtOutput += scheme;
 
     // Well formedness checks happen here
 
@@ -645,11 +675,13 @@ var toolbarCommands = {
         var windowFeatures = 'menubar=no,location=no,resizable=yes,scrollbars=yes,status=no';
         var windowName = _.uniqueId('optimization');
         var optWindow = window.open('', windowName, windowFeatures);
-        optWindow.document.write('<textarea rows="30" cols="50">'+ preference + optimization + '</textarea>');
+        optWindow.document.write('<textarea rows="30" cols="50">'+ scheme + '</textarea><br><button>Change scheme</button>');
     },
     toJSON: function() {
         let nameOfFile = ''
         smtOutput = ''
+        optimization = ''
+        preference = ''
         var windowFeatures = 'menubar=no,location=no,resizable=yes,scrollbars=yes,status=no';
         var windowName = _.uniqueId('json_output');
         var jsonWindow = window.open('', windowName, windowFeatures);

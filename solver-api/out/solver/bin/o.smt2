@@ -4,6 +4,7 @@
 ;;%%%%
 ;Declaration of Goal, Assumption and Refinement Propostions
 ;%%%%
+(declare-fun G1 () Bool) 
 
 
 ;;%%%%
@@ -26,9 +27,7 @@
 ;%%%%
 
 
-
-;;%%
-;;Preference:
+(assert-soft G1 :id unsat_requirements)
 
 ;;%%
 ;;Optimization:
@@ -39,4 +38,3 @@
 (set-model 1)
 (get-model)
 (exit)
-
