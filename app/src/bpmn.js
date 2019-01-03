@@ -558,12 +558,19 @@ function smtize() {
     });
 
 
+    
+
     graph.attributes.cells.models.forEach((model) => {
         if (typeof model.attributes.attrs['.label'] !== 'undefined') {
-            model.attributes.attrs['.label'].weight.forEach((w) => {
-                console.log(w)
-                smtOutput += '(assert-soft ' + model.attributes.attrs.label.text + ' :weight ' + w.attrs.text.body + ' :id ' + w.attrs.text.title + ')\r\n';
-            })
+            if (typeof model.attributes.attrs['.label'].weight !== 'undefined') {
+                if (model.attributes.type === 'standard.Goal') {
+                    model.attributes.attrs['.label'].weight.forEach((w) => {
+                        console.log(w)
+                        smtOutput += '(assert-soft ' + model.attributes.attrs.label.text + ' :weight ' + w.attrs.text.body + ' :id ' + w.attrs.text.title + ')\r\n';
+                    })
+                }
+ 
+            }
         }
     })
 
