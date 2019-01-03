@@ -1,0 +1,82 @@
+% -*- SMT2 -*-
+%
+% Author: Patrick Trentin <patrick.trentin@unitn.it>
+%
+% This file is part of OptiMathSAT.
+%
+% FLATZINC TO SMTLIB2:
+%     It is possible to use OptiMathSAT as a fzn2smt2 converter
+%     by running it with the following options:
+%
+%         -input=fzn 
+%         -debug.solver_enabled=false
+%         -debug.api_call_trace=1
+%         -debug.api_call_trace_dump_config=false
+%         -debug.api_call_trace_filename=outputfile.smt2
+%
+%     The generated 'outputfile.smt2' is encoded in SmtLibv2
+%     enriched with optimization extensions for OMT.
+%
+% POST-PROCESSING #1:
+%     In order to use the printed formula with OptiMathSAT,
+%     the following options should be enabled either by
+%     command-line or by pre-pending them in the SmtLibv2 file:
+%
+%         (set-option :config model_generation=true)
+%             or, equivalently, (set-option :produce-models true)
+%         (set-option :config opt.par.mode=callback)
+%         (set-option :config opt.print_objectives=true)
+%
+%     The reason for this is that the FlatZinc interpreter works
+%     fundamentally different than the SmtLibv2 interpreter and
+%     these differences needs to be taken into account.
+%
+% POST-PROCESSING #2:
+%     The set of optimization extensions to SmtLibv2 have
+%     not yet been standardised to this day, so some solvers
+%     might not be able to correctly handle formulas generated
+%     by OptiMathSAT.
+%     If one intends to translate a formula and use it under Z3,
+%     it is necessary to add the following option that causes
+%     the expansion of 'assert-soft' commands into plain SmbLibv2:
+%
+%         -opt.debug.expand_soft=True
+%
+%     Z3 does also not support objective function annotations, so
+%     these should be removed from the printed formula.
+%
+
+% % % % % % % % % % % % % % % % % % % % % % %
+% % % % % % % % % % % % % % % % % % % % % % %
+% % % % % % % % % % % % % % % % % % % % % % %
+
+var 0..3: x ::output_var;
+var 0..3: y ::output_var;
+
+constraint int_lin_le([1, 1, -1], [x, y, 4], 0);
+
+solve maximize x, maximize y;
+
+%
+% EXAMPLE:
+%
+% ~$ ../bin/optimathsat -input=fzn \
+%                       -debug.solver_enabled=false \
+%                       -debug.api_call_trace=1 \
+%                       -debug.api_call_trace_dump_config=false \
+%                       -debug.api_call_trace_filename=output.smt2
+% =====UNKNOWN=====
+%
+% ~$ ls
+% ...     output.smt2     ...
+%
+% ~% ../bin/optimathsat -model_generation=true \
+%                       -opt.par.mode=callback \
+%                       -opt.print_objectives=true \
+%                       -opt.priority=lex
+% (objectives
+%  (x 3)
+%  (y 1)
+% )
+% sat
+%

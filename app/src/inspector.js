@@ -72,23 +72,29 @@ window.inputs = {
                 index: 4
             },
             '.label/weight': {
-                type: 'text',
-                label: 'Weight',
-                group: 'general',
-                index: 5
-            },
-            '.label/weightType': {
-                type: 'text',
-                label: 'Weight type',
-                group: 'general',
-                index: 6
-            },
-            'body/fill': {
-                type: 'color',
-                label: 'Body Color',
-                group: 'appearance',
-                index: 7
-            },
+                type: 'list',
+                label: 'Weights',
+                group: 'Weights',
+                item: {
+                  type: 'object',
+                  properties: {
+                    attrs: {
+                      text: {
+                        title: {
+                          type: 'text',
+                          label: 'Weight Type',
+                          index: 1
+                        },
+                        body: {
+                          type: 'text',
+                          label: 'Weight value',
+                          index: 2,
+                        }
+                      },
+                    } 
+                  } 
+                } 
+              },
         }
     },
 
@@ -105,13 +111,7 @@ window.inputs = {
                 label: 'Weight',
                 group: 'general',
                 index: 3
-            },
-            'body/fill': {
-                type: 'color',
-                label: 'Body Color',
-                group: 'appearance',
-                index: 4
-            },
+            }
         },
 
         // eventType: {

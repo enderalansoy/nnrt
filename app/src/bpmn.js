@@ -307,7 +307,7 @@ graph.on('change', function(eventName, cell) {
         if (typeof eventName.changed.attrs != 'undefined') {
             if (typeof eventName.changed.attrs['.label'] != 'undefined') {
                 if (typeof eventName.changed.attrs['.label'].mandatory != 'undefined' && eventName.changed.attrs['.label'].mandatory != 'no') {
-                    let mandatoryColor = 'red';
+                    let mandatoryColor = 'lightblue';
                     eventName.attr('body/fill', mandatoryColor);
                 } else {
                     eventName.attr('body/fill', '#FFFFFF');
@@ -592,18 +592,34 @@ function smtize() {
     
     // File download is happening here
     if (document.getElementById('fileName').value === '' || typeof document.getElementById('fileName').value === 'undefined') {
-        download(smtOutput, 'output.smt2', 'text');
-        axios.get('http://localhost:3000/', {
+        //download(smtOutput, 'output.smt2', 'text');
+        axios.post('http://localhost:3000/', {
             hey: smtOutput,
           })
           .then(function (response) {
-            console.log(response);
+              console.log(graph.attributes.cells.models)
+              graph.attributes.cells.models.forEach((model) => {
+                if (typeof model.attributes.attrs.label !== 'undefined') {
+                    response.data.forEach((result) => {
+                        if (result.el === model.attributes.attrs.label.text) {
+                            if (result.val === 'false') {
+                                model.attr('label/fill', 'red');
+                                model.attr('body/stroke', 'red');
+                            } else if (result.val === 'true') {
+                                model.attr('label/fill', 'green');
+                                model.attr('body/stroke', 'green');
+                            } 
+                        }
+                     }) 
+                  }
+              })
+            console.log(response.data);
           })
           .catch(function (error) {
             console.log(error);
           });
     } else {
-        download(smtOutput, document.getElementById('fileName').value + '.smt2', 'text');
+        //download(smtOutput, document.getElementById('fileName').value + '.smt2', 'text');
     }
 
 
