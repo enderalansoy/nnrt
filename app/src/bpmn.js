@@ -554,7 +554,7 @@ function smtize() {
             c.relation = 'none';
         }
 
-        smtOutput += '(assert-soft ' + c.name + ' :weight ' + c.weight + ' :id ' + c.relation + ')\r\n';
+        smtOutput += '(assert-soft (not ' + c.name + ') :weight ' + c.weight + ' :id ' + c.relation + ')\r\n';
     });
 
 
