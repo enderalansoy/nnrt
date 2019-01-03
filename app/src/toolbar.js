@@ -38,6 +38,15 @@ window.toolbarConfig = {
             }
         },
         {
+            type: 'button',
+            name: 'optimization',
+            attrs: {
+                button: {
+                    'data-tooltip': 'Custom optimization scheme'
+                }
+            }
+        },
+        {
             type: 'zoom-in',
             name: 'zoom-in',
             attrs: {

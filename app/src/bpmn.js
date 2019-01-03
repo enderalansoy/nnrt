@@ -17,6 +17,13 @@ var keyboard = new joint.ui.Keyboard();
 var jsonOfGraph = {};
 
 let smtOutput = '';
+let preference = `
+;;%%\r\n;;Preference:\r\n`;
+let optimization = `
+;;%%\r\n;;Optimization:\r\n;;%%\r\n(minimize unsat_requirements)\r\n(minimize sat_tasks)\r\n(check-sat)\r\n(set-model 1)\r\n(get-model)\r\n(exit)\r\n
+`;
+
+
 
 var paper = new joint.dia.Paper({
     width: 2000,
@@ -551,7 +558,39 @@ function smtize() {
 
     smtOutput += `\r\n\r\n`;
 
-    smtOutput += `;;%%\r\n;;Optimization:\r\n;;%%\r\n(minimize unsat_requirements)\r\n(minimize sat_tasks)\r\n(check-sat)\r\n(get-model)\r\n(exit)\r\n`;
+    // Preference
+
+    let leafs = goals
+    let tops = goals
+
+    nodes.forEach((node) => {
+        goals.forEach((goal) => {
+            refinements.forEach((ref) => {
+                if (node.to === goal.id && node.from === ref.id) {
+                    leafs = leafs.filter(e => e !== goal)
+                } else if (node.from === goal.id && node.to === ref.id) {
+                    tops = tops.filter(e => e !== goal)
+                }
+            })
+        })
+    })
+
+
+    leafs = [...new Set(leafs)];
+    tops = [...new Set(tops)];
+
+    leafs.forEach((leaf) => {
+        preference += `(assert-soft (not ${leaf.name} ) :id sat_tasks)\r\n`
+    })
+    
+    tops.forEach((top) => {
+        preference += `(assert-soft ${top.name} :id unsat_requirements)\r\n`
+    })
+    
+    // Optimization scheme
+
+    smtOutput += preference;
+    smtOutput += optimization;
 
     // Well formedness checks happen here
 
@@ -560,36 +599,7 @@ function smtize() {
         smtOutput = 'There are duplicate values in the goal model, please rename your Goals or Refinements uniquely and try again';
         return
     }
-
-    // Double refinements check
-    // for (let i = 0; i < refinements.length; i += 1) {
-    //     for (let j = i + 1; j < refinements.length; j += 1) {
-    //         if (refinements[i].from === refinements[j].to && refinements[i].to === refinements[j].from) {
-    //             smtOutput = 'There are double refinements in the model';
-    //             return
-    //         } else if (refinements[i].from === refinements[j].from && refinements[i].to === refinements[j].to) {
-    //             smtOutput = 'There are double refinements in the model';
-    //             return
-    //         }
-    //     }
-    // }
-
-    // //Leaf goal check
-    // let leafGoals = goals;
-    // goals.forEach((goal) => {
-    //     refinements.forEach((ref) => {
-    //         nodes.forEach((node) => {
-    //             if (node.id === ref.id) {
-    //                 console.log(node)
-    //                 if (node.to === goal.id) {
-    //                     console.log(goal.name);
-    //                 }
-    //             }
-    //         })
-    //     })
-    // })
-
-    
+   
     // File download is happening here
     if (document.getElementById('fileName').value === '' || typeof document.getElementById('fileName').value === 'undefined') {
         //download(smtOutput, 'output.smt2', 'text');
@@ -614,6 +624,7 @@ function smtize() {
                   }
               })
             console.log(response.data);
+            let analysisResult = response.data;
           })
           .catch(function (error) {
             console.log(error);
@@ -625,7 +636,17 @@ function smtize() {
 
 }
 
+function writeToWindow(jsonWindow, analysisResult) {
+    jsonWindow.document.write('<pre><code class="javascript"><code class="keyword">' + analysisResult + '</code></pre>');
+}
+
 var toolbarCommands = {
+    optimizationScheme: function() {
+        var windowFeatures = 'menubar=no,location=no,resizable=yes,scrollbars=yes,status=no';
+        var windowName = _.uniqueId('optimization');
+        var optWindow = window.open('', windowName, windowFeatures);
+        optWindow.document.write('<textarea rows="30" cols="50">'+ preference + optimization + '</textarea>');
+    },
     toJSON: function() {
         let nameOfFile = ''
         smtOutput = ''
@@ -685,6 +706,7 @@ var toolbarCommands = {
 
 toolbar.on({
     'tojson:pointerclick': toolbarCommands.toJSON,
+    'optimization:pointerclick': toolbarCommands.optimizationScheme,
     'load:pointerclick': toolbarCommands.loadGraph,
     'save:pointerclick': toolbarCommands.saveGraph,
     'clear:pointerclick': _.bind(graph.clear, graph),
