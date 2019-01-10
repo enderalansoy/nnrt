@@ -11,34 +11,40 @@
 (declare-fun G5 () Bool) 
 (declare-fun R1 () Bool) 
 (declare-fun R2 () Bool) 
+(declare-fun R3 () Bool) 
 (declare-fun CCR1 () Bool) 
+(declare-fun CCR2 () Bool) 
 
 
 ;;%%%%
 ;Close-world
 ;%%%%
 
-(assert (=> G2(or R2)))
-(assert (=> G1(or R1 )))
+(assert (=> G2(or R3)))
+(assert (=> G1(or R2  R1 )))
 
 
 ;;%%%%
 ;Refinement-Goal relationships
 ;%%%%
-(assert (and (= R1 (and G2 G3 )) (=> R1 G1 )))
-(assert (and (= R2 (and G5 G4 )) (=> R2 G2 )))
+(assert (and (= R1 (and G2 )) (=> R1 G1 )))
+(assert (and (= R2 (and G3 )) (=> R2 G1 )))
+(assert (and (= R3 (and G5 G4 )) (=> R3 G2 )))
 
 
 ;;%%%%
 ;Mandatory goals
 ;%%%%
+(assert G3)
 
 
 ;;%%%%
 ;Contributions
 ;%%%%
 (assert (= CCR1 (and G5 G3)))
-(assert-soft (not CCR1) :weight 2 :id PCC)
+(assert-soft (not CCR1) :weight 3 :id PCC)
+(assert (= CCR2 (and G2 G3)))
+(assert-soft (not CCR2) :weight 2 :id PVC)
 
 
 (assert-soft (not G3 ) :id sat_tasks)

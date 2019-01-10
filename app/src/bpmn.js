@@ -315,7 +315,8 @@ graph.on('change', function(eventName, cell) {
         if (typeof eventName.changed.attrs != 'undefined') {
             if (typeof eventName.changed.attrs['.label'] != 'undefined') {
                 if (typeof eventName.changed.attrs['.label'].mandatory != 'undefined' && eventName.changed.attrs['.label'].mandatory != 'no') {
-                    let mandatoryColor = 'lightblue';
+                    // change color to a more blue color
+                    let mandatoryColor = 'blue';
                     eventName.attr('body/fill', mandatoryColor);
                 } else {
                     eventName.attr('body/fill', '#FFFFFF');
