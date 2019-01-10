@@ -26,7 +26,7 @@
 ;;%%%%
 ;Contributions
 ;%%%%
-(assert (=> (G1 G2)))
+(assert (=> (G2 G1)))
 
 
 (assert-soft G1 :id unsat_requirements)

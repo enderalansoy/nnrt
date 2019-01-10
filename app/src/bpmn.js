@@ -561,7 +561,7 @@ function smtize() {
         if (c.relation === 'EXC') {
             smtOutput += `(assert (not (and ${c.from} ${c.to})))\r\n`;
         } else if (c.relation === 'PRE') {
-            smtOutput += `(assert (=> (${c.from} ${c.to})))\r\n`;
+            smtOutput += `(assert (=> (${c.to} ${c.from})))\r\n`;
         } else {
             smtOutput += `(assert (= ${c.name} (and ${c.from} ${c.to})))\r\n`;
             if (c.weight === 'undefined') {
