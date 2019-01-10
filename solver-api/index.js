@@ -16,6 +16,7 @@ app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x
 app.use(cors())
 
 app.post('/', upload.array(), function (req, res, next) {
+    shell.cd('./out/solver/bin')
     setTimeout(function(){
         fs.writeFile("o.smt2", req.body.hey, function(err) {
             if(err) {

@@ -25,7 +25,6 @@
 ;;%%%%
 ;Mandatory goals
 ;%%%%
-(assert G1)
 
 
 ;;%%%%
