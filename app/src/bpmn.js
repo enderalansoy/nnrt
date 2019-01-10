@@ -340,7 +340,10 @@ graph.on('change', function(eventName, cell) {
                     contributionType = '-C'
                 } else if (eventName.changed.attrs['.label'].relation === 'NVC') {
                     contributionType = '-V'
+                } else if (eventName.changed.attrs['.label'].relation === 'EXC') {
+                    contributionType = 'EX'
                 }
+                
 
                 eventName.label(0,{
                     markup: [
@@ -518,6 +521,8 @@ function smtize() {
         refGoalRelations += `(assert (and (= ${ref.name} (and ${leftSide})) (=> ${ref.name} ${rightSide})))\r\n`;
     });
 
+    
+
     smtOutput += refGoalRelations;
 
     smtOutput += `\r\n\r\n`;
@@ -546,20 +551,26 @@ function smtize() {
             }
         });
 
-        smtOutput += `(assert (= ${c.name} (and ${c.from} ${c.to})))\r\n`;
+        console.log({contributions});
 
-        if (c.weight === 'undefined') {
-            c.weight = 1;
-        } 
-        if (typeof c.relation === 'undefined') {
-            c.relation = 'none';
-        }
-
-        smtOutput += '(assert-soft (not ' + c.name + ') :weight ' + c.weight + ' :id ' + c.relation + ')\r\n';
-    });
-
-
+        // Handle exclusion and precedence here
+        if (c.relation === 'EXC') {
+            smtOutput += `(assert (not (and ${c.from} ${c.to})))\r\n`;
+        } else if (c.relation === 'PRE') {
+            smtOutput += `(assert (=> (${c.from} ${c.to})))\r\n`;
+        } else {
+            smtOutput += `(assert (= ${c.name} (and ${c.from} ${c.to})))\r\n`;
+            if (c.weight === 'undefined') {
+                c.weight = 1;
+            } 
+            if (typeof c.relation === 'undefined') {
+                c.relation = 'none';
+            }
     
+            smtOutput += '(assert-soft (not ' + c.name + ') :weight ' + c.weight + ' :id ' + c.relation + ')\r\n';
+        }
+        
+    });
 
     graph.attributes.cells.models.forEach((model) => {
         if (typeof model.attributes.attrs['.label'] !== 'undefined') {
