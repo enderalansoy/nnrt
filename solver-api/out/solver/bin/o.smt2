@@ -6,7 +6,6 @@
 ;%%%%
 (declare-fun G1 () Bool) 
 (declare-fun G2 () Bool) 
-(declare-fun CCR1 () Bool) 
 
 
 ;;%%%%

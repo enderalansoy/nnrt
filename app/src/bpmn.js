@@ -449,7 +449,9 @@ function smtize() {
     });
 
     contributions.forEach((c) => {
-        smtOutput += `(declare-fun ${c.name} () Bool) \r\n`;
+        if (c.relation !== 'EXC' && c.relation !== 'PRE') {
+            smtOutput += `(declare-fun ${c.name} () Bool) \r\n`;
+        }
     })
 
     smtOutput += `\r\n\r\n`;
