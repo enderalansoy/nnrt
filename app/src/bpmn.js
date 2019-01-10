@@ -342,6 +342,8 @@ graph.on('change', function(eventName, cell) {
                     contributionType = '-V'
                 } else if (eventName.changed.attrs['.label'].relation === 'EXC') {
                     contributionType = 'EX'
+                } else if (eventName.changed.attrs['.label'].relation === 'PRE') {
+                    contributionType = 'PR'
                 }
                 
 
@@ -627,16 +629,28 @@ function smtize() {
     
     // Optimization scheme
 
-    optimization = `
-;;%%
-;;Optimization:
-;;%%
-(minimize unsat_requirements)
-(minimize sat_tasks)
-(check-sat)
-(set-model 1)
-(get-model)
-(exit)`
+    if (leafs.length < 1) {
+        optimization = `
+    ;;%%
+    ;;Optimization:
+    ;;%%
+    (minimize unsat_requirements)
+    (check-sat)
+    (set-model 1)
+    (get-model)
+    (exit)`
+    } else {
+        optimization = `
+    ;;%%
+    ;;Optimization:
+    ;;%%
+    (minimize unsat_requirements)
+    (minimize sat_tasks)
+    (check-sat)
+    (set-model 1)
+    (get-model)
+    (exit)`
+    }
 
     scheme = preference + optimization;
     smtOutput += scheme;

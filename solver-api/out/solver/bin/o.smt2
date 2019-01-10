@@ -27,18 +27,17 @@
 ;;%%%%
 ;Contributions
 ;%%%%
-(assert (not (and G1 G2)))
+(assert (=> (G1 G2)))
 
 
 (assert-soft G1 :id unsat_requirements)
 (assert-soft G2 :id unsat_requirements)
 
-;;%%
-;;Optimization:
-;;%%
-(minimize unsat_requirements)
-(minimize sat_tasks)
-(check-sat)
-(set-model 1)
-(get-model)
-(exit)
+    ;;%%
+    ;;Optimization:
+    ;;%%
+    (minimize unsat_requirements)
+    (check-sat)
+    (set-model 1)
+    (get-model)
+    (exit)
