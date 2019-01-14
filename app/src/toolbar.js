@@ -33,7 +33,16 @@ window.toolbarConfig = {
             name: 'tojson',
             attrs: {
                 button: {
-                    'data-tooltip': 'Generate .smt2'
+                    'data-tooltip': 'Solve'
+                }
+            }
+        },
+        {
+            type: 'button',
+            name: 'downloadsmt2',
+            attrs: {
+                button: {
+                    'data-tooltip': 'Download .smt2'
                 }
             }
         },

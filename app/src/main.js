@@ -628,6 +628,9 @@ function smtize() {
     tops.forEach((top) => {
         preference += `(assert-soft ${top.name} :id unsat_requirements)\r\n`
     })
+
+    console.log({leafs})
+    console.log({tops})
     
     // Optimization scheme
 
@@ -638,7 +641,7 @@ function smtize() {
     ;;%%
     (minimize unsat_requirements)
     (check-sat)
-    (set-model 1)
+    (load-objective-model 0)
     (get-model)
     (exit)`
     } else {
@@ -649,7 +652,8 @@ function smtize() {
     (minimize unsat_requirements)
     (minimize sat_tasks)
     (check-sat)
-    (set-model 1)
+    (get-objectives)
+    (load-objective-model 1)
     (get-model)
     (exit)`
     }
@@ -668,7 +672,7 @@ function smtize() {
     // File download is happening here
     if (document.getElementById('fileName').value === '' || typeof document.getElementById('fileName').value === 'undefined') {
         //download(smtOutput, 'output.smt2', 'text');
-        axios.post('http://localhost:3000/', {
+        axios.post('http://206.189.12.143/', {
             hey: smtOutput,
           })
           .then(function (response) {
@@ -712,14 +716,25 @@ var toolbarCommands = {
         var optWindow = window.open('', windowName, windowFeatures);
         optWindow.document.write('<textarea rows="30" cols="50">'+ scheme + '</textarea><br><button>Change scheme</button>');
     },
+
+    downloadSmt2: function() {
+        toolbarCommands.toJSON();
+        smtize();
+        if (document.getElementById('fileName').value === '' || typeof document.getElementById('fileName').value === 'undefined') {
+            download(smtOutput, 'output.smt2', 'text');
+        } else {
+            download(smtOutput, document.getElementById('fileName').value + '.smt2', 'text');
+        }
+    },
+
     toJSON: function() {
         let nameOfFile = ''
         smtOutput = ''
         optimization = ''
         preference = ''
-        var windowFeatures = 'menubar=no,location=no,resizable=yes,scrollbars=yes,status=no';
-        var windowName = _.uniqueId('json_output');
-        var jsonWindow = window.open('', windowName, windowFeatures);
+        // var windowFeatures = 'menubar=no,location=no,resizable=yes,scrollbars=yes,status=no';
+        // var windowName = _.uniqueId('json_output');
+        // var jsonWindow = window.open('', windowName, windowFeatures);
 
         // Keep this if we ever need to see the json output.
         //jsonWindow.document.write(JSON.stringify(graph.toJSON()));
@@ -729,7 +744,7 @@ var toolbarCommands = {
         // Main function works here
         smtize();
 
-        jsonWindow.document.write('<pre><code class="javascript"><code class="keyword">' + smtOutput + '</code></pre>');
+        //jsonWindow.document.write('<pre><code class="javascript"><code class="keyword">' + smtOutput + '</code></pre>');
 
     },
 
@@ -774,6 +789,7 @@ var toolbarCommands = {
 toolbar.on({
     'tojson:pointerclick': toolbarCommands.toJSON,
     'optimization:pointerclick': toolbarCommands.optimizationScheme,
+    'downloadsmt2:pointerclick': toolbarCommands.downloadSmt2,
     'load:pointerclick': toolbarCommands.loadGraph,
     'save:pointerclick': toolbarCommands.saveGraph,
     'clear:pointerclick': _.bind(graph.clear, graph),

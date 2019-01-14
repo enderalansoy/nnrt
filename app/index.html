@@ -4,6 +4,8 @@
         <title>NN Release Tool</title>
         <link rel="stylesheet" type="text/css" href="../build/rappid.min.css" />
         <link rel="stylesheet" type="text/css" href="./css/bpmn.css" />
+        <link rel="stylesheet" type="text/css" href="https://cdn.rawgit.com/rikmms/progress-bar-4-axios/0a3acf92/dist/nprogress.css" />
+        <link rel="stylesheet" type="text/css" href="./css/progressbar.css" />
     </head>
     <body>
         <div id="paper-container"></div>
@@ -29,8 +31,13 @@
 
         <script src="../build/rappid.min.js"></script>
         <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+        <script src="https://cdn.rawgit.com/rikmms/progress-bar-4-axios/0a3acf92/dist/index.js"></script>
         <script src="./src/inspector.js"></script>
         <script src="./src/toolbar.js"></script>
-        <script src="./src/bpmn.js"></script>
+        <script src="./src/main.js"></script>
+        <script type="text/javascript">
+        loadProgressBar()
+        </script>
+
     </body>
 </html>
